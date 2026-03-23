@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 France Security Hub - Admin Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            position: relative;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        /* ============================================
+           GLITCH EFFECT
+           ============================================ */
+
+        .glitch {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0ff;
+            text-shadow: 
+                -2px 0 #ff00de,
+                2px 0 #00ffff,
+                0 -2px #0ff,
+                0 2px #ff00de;
+            animation: glitch 0.3s infinite;
+            letter-spacing: 3px;
+        }
+
+        @keyframes glitch {
+            0%, 100% {
+                text-shadow: 
+                    -2px 0 #ff00de,
+                    2px 0 #00ffff;
+            }
+            20% {
+                text-shadow: 
+                    2px 0 #ff00de,
+                    -2px 0 #00ffff;
+            }
+            40% {
+                text-shadow: 
+                    -2px 0 #00ffff,
+                    2px 0 #ff00de;
+            }
+            60% {
+                text-shadow: 
+                    2px 0 #0ff,
+                    -2px 0 #ff00de;
+            }
+            80% {
+                text-shadow: 
+                    -2px 0 #ff00de,
+                    2px 0 #0ff;
+            }
+        }
+
+        /* ============================================
+           NEON BUTTONS
+           ============================================ */
+
+        .btn-neon {
+            padding: 12px 25px;
+            font-size: 1rem;
+            background: transparent;
+            color: #0ff;
+            border: 2px solid #0ff;
+            cursor: pointer;
+            margin: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0, 255, 255, 0.1);
+            text-transform: uppercase;
+        }
+
+        .btn-neon:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 20px #0ff, 0 0 30px #0ff;
+            transform: scale(1.05);
+        }
+
+        .btn-neon:active {
+            transform: scale(0.95);
+        }
+
+        .btn-neon:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-ban {
+            color: #ff0066;
+            border-color: #ff0066;
+            box-shadow: 0 0 10px #ff0066, inset 0 0 10px rgba(255, 0, 102, 0.1);
+        }
+
+        .btn-ban:hover {
+            background: #ff0066;
+            color: #000;
+            box-shadow: 0 0 20px #ff0066, 0 0 30px #ff0066;
+        }
+
+        .btn-unban {
+            color: #00ff00;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px #00ff00, inset 0 0 10px rgba(0, 255, 0, 0.1);
+        }
+
+        .btn-unban:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+
+        .btn-logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            background: transparent;
+            color: #ff0066;
+            border: 2px solid #ff0066;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #ff0066;
+            z-index: 100;
+        }
+
+        .btn-logout:hover {
+            background: #ff0066;
+            color: #000;
+            box-shadow: 0 0 20px #ff0066;
+        }
+
+        /* ============================================
+           FORM STYLING
+           ============================================ */
+
+        .form-container {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #0ff;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px #0ff, inset 0 0 10px rgba(0, 255, 255, 0.05);
+            min-width: 400px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #0ff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            border-radius: 3px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 15px #0ff, inset 0 0 10px rgba(0, 255, 255, 0.1);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(0, 255, 255, 0.5);
+        }
+
+        .form-toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #0ff;
+        }
+
+        .form-toggle button {
+            background: none;
+            border: none;
+            color: #0ff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: 'Courier New', monospace;
+            margin-left: 5px;
+            transition: color 0.3s;
+        }
+
+        .form-toggle button:hover {
+            color: #ff00de;
+            text-shadow: 0 0 10px #ff00de;
+        }
+
+        .error-message {
+            color: #ff0066;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            color: #00ff00;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* ============================================
+           TABLE STYLING
+           ============================================ */
+
+        .admin-container {
+            width: 95%;
+            max-width: 1200px;
+            animation: fadeIn 0.5s ease-in;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .users-table th {
+            background: rgba(0, 255, 255, 0.1);
+            color: #0ff;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #0ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .users-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            color: #0ff;
+        }
+
+        .users-table tr:hover {
+            background: rgba(0, 255, 255, 0.05);
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-banned {
+            color: #ff0066;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            color: #00ff00;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+
+        .role-user {
+            color: #00aaff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .contact-section {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #0ff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            box-shadow: 0 0 15px #0ff;
+            z-index: 100;
+        }
+
+        .contact-section p {
+            margin: 5px 0;
+            color: #0ff;
+        }
+
+        .contact-section a {
+            color: #00ff00;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-section a:hover {
+            color: #ff00de;
+            text-shadow: 0 0 10px #ff00de;
+        }
+
+        .loading {
+            font-size: 2rem;
+            color: #0ff;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .user-dashboard {
+            text-align: center;
+        }
+
+        .user-dashboard p {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #0ff;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        @media (max-width: 768px) {
+            .glitch {
+                font-size: 1.8rem;
+            }
+
+            .form-container {
+                min-width: 90%;
+                padding: 25px;
+            }
+
+            .users-table {
+                font-size: 0.85rem;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons button {
+                width: 100%;
+            }
+
+            .btn-logout {
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+
+            .contact-section {
+                bottom: auto;
+                top: 60px;
+                left: 10px;
+                right: 10px;
+                font-size: 0.75rem;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <canvas id="matrixCanvas"></canvas>
+        <div class="content" id="app">
+            <!-- Content will be rendered here -->
+        </div>
+        <div class="contact-section">
+            <p><strong>📞 WASILIANA NASI</strong></p>
+            <p>📱 WhatsApp: <a href="https://wa.me/255775379095" target="_blank">+255 775 379 095</a></p>
+            <p>📧 Gmail: <a href="mailto:franceally36@gmail.com">franceally36@gmail.com</a></p>
+            <p style="margin-top: 10px; font-size: 0.75rem; color: #ffaa00;">🔐 France Security Hub v1.0</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // MATRIX RAIN ANIMATION
+        // ============================================
+        
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const charArray = chars.split('');
+        const columnWidth = 20;
+        const columns = Math.floor(canvas.width / columnWidth);
+        const drops = Array(columns).fill(0).map(() => Math.random() * canvas.height);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = '20px Courier New';
+            ctx.fillStyle = '#0ff';
+
+            for (let i = 0; i < drops.length; i++) {
+                const char = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(char, i * columnWidth, drops[i]);
+
+                if (drops[i] > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i] += 20;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // ============================================
+        // APPLICATION STATE MANAGEMENT
+        // ============================================
+
+        const API_URL = 'http://localhost:5000';
+        let currentUser = null;
+        let users = [];
+        let history = [];
+        let currentTab = 'users';
+        let selectedUserForBan = null;
+
+        // Load user from localStorage
+        function loadUser() {
+            const token = localStorage.getItem('token');
+            const userString = localStorage.getItem('user');
+            if (token && userString) {
+                currentUser = JSON.parse(userString);
+                render();
+            } else {
+                renderLogin();
+            }
+        }
+
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+
+        function renderLogin() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="form-container">
+                    <h1 class="glitch">🔒 FRANCE</h1>
+                    <form id="authForm">
+                        <div id="usernameField" class="form-group" style="display: none;">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="Chagua username" />
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="email@example.com" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="password" placeholder="••••••••" required />
+                        </div>
+                        <div id="errorMsg" class="error-message"></div>
+                        <button type="submit" class="btn-neon" style="width: 100%;">LOGIN</button>
+                    </form>
+                    <div class="form-toggle">
+                        Sina akaunti? <button type="button" id="toggleRegister">REGISTER</button>
+                    </div>
+                </div>
+            `;
+
+            let isRegister = false;
+            const toggleBtn = document.getElementById('toggleRegister');
+            const usernameField = document.getElementById('usernameField');
+            const form = document.getElementById('authForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            toggleBtn.addEventListener('click', () => {
+                isRegister = !isRegister;
+                usernameField.style.display = isRegister ? 'block' : 'none';
+                toggleBtn.textContent = isRegister ? 'LOGIN' : 'REGISTER';
+                submitBtn.textContent = isRegister ? 'REGISTER' : 'LOGIN';
+                document.getElementById('errorMsg').textContent = '';
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await handleAuth(isRegister);
+            });
+        }
+
+        async function handleAuth(isRegister) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            try {
+                const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
+                const payload = isRegister 
+                    ? { email, password, username } 
+                    : { email, password };
+
+                const res = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    errorMsg.textContent = '❌ ' + (data.error || 'Kuna tatizo');
+                    return;
+                }
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    render();
+                }
+            } catch (err) {
+                errorMsg.textContent = '❌ Connection error. Jaribu tena';
+                console.error(err);
+            }
+        }
+
+        async function render() {
+            if (!currentUser) {
+                renderLogin();
+                return;
+            }
+
+            if (currentUser.role !== 'admin') {
+                renderUserDashboard();
+                return;
+            }
+
+            await fetchUsers();
+            await fetchHistory();
+            renderAdminPanel();
+        }
+
+        function renderUserDashboard() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <button class="btn-logout" onclick="handleLogout()">LOGOUT</button>
+                <div class="user-dashboard">
+                    <h1 class="glitch">WELCOME ${currentUser.username}</h1>
+                    <p>Karibu kwenye France Security Hub</p>
+                </div>
+            `;
+        }
+
+        async function renderAdminPanel() {
+            const app = document.getElementById('app');
+            let t
